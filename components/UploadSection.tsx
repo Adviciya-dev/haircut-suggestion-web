@@ -1,141 +1,95 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
-import Image from "next/image";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { processImageWithAI } from "@/lib/api";
+import {
+  processHaircutImage,
+  processIndoorImage,
+  processVehicleImage,
+} from "@/lib/api";
 import { validateImage } from "@/lib/utils";
-import LoadingShimmer from "@/components/LoadingShimmer";
-import GeneratedImages from "@/components/GeneratedImages";
+import GeneratedImages from "./GeneratedImages";
+import LoadingShimmer from "./LoadingShimmer";
 
-export default function UploadSection() {
-  const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<string[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+interface UploadSectionProps {
+  uploadPrompt: string;
+  apiFn: "processHaircutImage" | "processIndoorImage" | "processVehicleImage";
+}
 
-  const revokeImageUrl = useCallback((url: string | null) => {
-    if (url) {
-      URL.revokeObjectURL(url);
-    }
-  }, []);
+export default function UploadSection({
+  uploadPrompt,
+  apiFn,
+}: UploadSectionProps) {
+  const [file, setFile] = useState<File | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    return () => {
-      revokeImageUrl(imageUrl);
-    };
-  }, [imageUrl, revokeImageUrl]);
-
-  const handleDrop = useCallback(
-    async (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const droppedFile = e.dataTransfer.files[0];
-      if (validateImage(droppedFile)) {
-        setError("");
-        revokeImageUrl(imageUrl);
-        const newImageUrl = URL.createObjectURL(droppedFile);
-        setImageUrl(newImageUrl);
-        setUploadedImage(newImageUrl);
-        setIsLoading(true);
-        try {
-          const response = await processImageWithAI(droppedFile);
-          setResults(response);
-        } catch (err) {
-          const errorMessage =
-            err instanceof Error
-              ? err.message
-              : "Failed to process image. Please try again.";
-          setError(errorMessage);
-        }
-        setIsLoading(false);
-      } else {
-        setError(
-          "Invalid file format or size. Supported: JPEG, JPG, WEBP, PNG (max 5MB)."
-        );
-      }
-    },
-    [imageUrl, revokeImageUrl]
-  );
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile && validateImage(selectedFile)) {
+      setFile(selectedFile);
       setError("");
-      revokeImageUrl(imageUrl);
-      const newImageUrl = URL.createObjectURL(selectedFile);
-      setImageUrl(newImageUrl);
-      setUploadedImage(newImageUrl);
-      setIsLoading(true);
-      try {
-        const response = await processImageWithAI(selectedFile);
-        setResults(response);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Failed to process image. Please try again.";
-        setError(errorMessage);
-      }
-      setIsLoading(false);
     } else {
+      setError("Please upload a valid image (JPEG, PNG, WEBP, <5MB).");
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setIsProcessing(true);
+    setError("");
+    try {
+      let result: string[];
+      switch (apiFn) {
+        case "processHaircutImage":
+          result = await processHaircutImage(file);
+          break;
+        case "processIndoorImage":
+          result = await processIndoorImage(file);
+          break;
+        case "processVehicleImage":
+          result = await processVehicleImage(file);
+          break;
+      }
+      setImages(result);
+    } catch (err: unknown) {
       setError(
-        "Invalid file format or size. Supported: JPEG, JPG, WEBP, PNG (max 5MB)."
+        err instanceof Error ? err.message : "An unknown error occurred"
       );
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   return (
-    <section id="upload" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 text-center">
-        <h3 className="text-3xl font-semibold text-gray-900">
-          Upload Your Photo
-        </h3>
-        <p className="text-gray-600 mt-2">
-          Supported formats: JPEG, JPG, WEBP, PNG (max 5MB)
+    <section className="py-12 sm:py-16 bg-black/50">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p className="text-gray-300 text-base sm:text-lg mb-6 sm:mb-8 max-w-xl mx-auto">
+          {uploadPrompt}
         </p>
-        <motion.div
-          className={`mt-6 border-2 border-dashed border-gray-300 p-10 rounded-lg ${
-            isDragging ? "bg-blue-50 border-blue-600" : ""
-          }`}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-          onDragEnter={() => setIsDragging(true)}
-          onDragLeave={() => setIsDragging(false)}
-        >
+        <div className="space-y-4 max-w-md mx-auto">
           <input
             type="file"
-            accept=".jpg,.jpeg,.png,.webp"
+            accept="image/*"
             onChange={handleFileChange}
-            className="hidden"
-            id="file-upload"
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
           />
-          <label htmlFor="file-upload" className="cursor-pointer">
-            <p className="text-gray-600">Drag & drop or click to upload</p>
-          </label>
-        </motion.div>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
-        {uploadedImage && !isLoading && (
-          <div className="mt-6">
-            <h4 className="text-lg font-medium text-gray-900 mb-2">
-              Your Uploaded Photo
-            </h4>
-            <div className="relative w-64 h-48 mx-auto rounded-lg shadow-md overflow-hidden bg-gray-200">
-              <Image
-                src={uploadedImage}
-                alt="Uploaded photo"
-                fill
-                className="object-contain"
-                unoptimized={true}
-              />
-            </div>
-          </div>
+          <motion.button
+            onClick={handleUpload}
+            disabled={!file || isProcessing}
+            whileHover={{ scale: 1.05 }}
+            className="bg-blue-600 text-white px-6 py-2 rounded-full disabled:opacity-50 font-medium text-sm sm:text-base"
+          >
+            {isProcessing ? "Processing..." : "Generate Variations"}
+          </motion.button>
+        </div>
+        {error && (
+          <p className="text-red-400 mt-4 text-sm sm:text-base">{error}</p>
         )}
-        {isLoading && <LoadingShimmer imageSrc={uploadedImage} />}
-        {results.length > 0 && <GeneratedImages images={results} />}
+        {isProcessing && (
+          <LoadingShimmer imageSrc={file ? URL.createObjectURL(file) : null} />
+        )}
+        {images.length > 0 && <GeneratedImages images={images} />}
       </div>
     </section>
   );

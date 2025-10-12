@@ -1,12 +1,16 @@
 import { Poppins } from "next/font/google";
 import "./globals.css";
 
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-poppins",
+});
 
 export const metadata = {
-  title: "Haircut-GPT | AI-Powered Hairstyle Generator",
+  title: "Futuris AI | Futuristic AI Transformations",
   description:
-    "Transform your look with AI-generated hairstyle suggestions. Upload a photo and explore new styles instantly.",
+    "Unlock AI-powered transformations for your style, space, and ride. Experience the future today.",
 };
 
 export default function RootLayout({
@@ -19,9 +23,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body className={poppins.className} role="main">
-        {children}
-      </body>
+      <body className={poppins.variable}>{children}</body>
     </html>
   );
 }

@@ -5,15 +5,16 @@ import { useState } from "react";
 const faqs = [
   {
     question: "What file formats are supported?",
-    answer: "We support JPEG, JPG, WEBP, and PNG formats.",
+    answer: "JPEG, JPG, WEBP, PNG.",
+  },
+  { question: "How long does processing take?", answer: "A few seconds." },
+  {
+    question: "Is my data secure?",
+    answer: "Yes, processed securely, not stored.",
   },
   {
-    question: "How long does it take to process?",
-    answer: "Processing typically takes a few seconds.",
-  },
-  {
-    question: "Is my photo secure?",
-    answer: "Yes, your photos are processed securely and not stored.",
+    question: "Can I use it on mobile?",
+    answer: "Fully responsive for all devices.",
   },
 ];
 
@@ -21,23 +22,21 @@ export default function FAQSection() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <h3 className="text-3xl font-semibold text-gray-900 text-center">
+    <section id="faq" className="py-20 bg-black/50">
+      <div className="max-w-4xl mx-auto px-4">
+        <h3 className="text-3xl font-semibold text-center mb-10 text-blue-400 text-glow">
           Frequently Asked Questions
         </h3>
-        <div className="mt-10 space-y-4">
+        <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <div key={index} className="border-b border-gray-200">
+            <div key={index} className="border-b border-gray-800">
               <button
-                className="w-full text-left py-4 flex justify-between items-center"
+                className="w-full text-left py-4 flex justify-between items-center text-gray-300"
                 onClick={() =>
                   setActiveIndex(activeIndex === index ? null : index)
                 }
               >
-                <span className="text-lg font-medium text-gray-900">
-                  {faq.question}
-                </span>
+                <span className="text-lg font-medium">{faq.question}</span>
                 <span>{activeIndex === index ? "-" : "+"}</span>
               </button>
               <AnimatePresence>
@@ -48,7 +47,7 @@ export default function FAQSection() {
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <p className="text-gray-600 pb-4">{faq.answer}</p>
+                    <p className="text-gray-400 pb-4">{faq.answer}</p>
                   </motion.div>
                 )}
               </AnimatePresence>

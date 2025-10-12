@@ -16,7 +16,7 @@ export default function GeneratedImages({ images }: GeneratedImagesProps) {
   const handleDownload = (url: string, index: number) => {
     const link = document.createElement("a");
     link.href = url;
-    link.download = `hairstyle-${index + 1}.png`;
+    link.download = `variation-${index + 1}.png`;
     link.click();
   };
 
@@ -25,10 +25,10 @@ export default function GeneratedImages({ images }: GeneratedImagesProps) {
     for (let i = 0; i < images.length; i++) {
       const response = await fetch(images[i]);
       const blob = await response.blob();
-      zip.file(`hairstyle-${i + 1}.png`, blob);
+      zip.file(`variation-${i + 1}.png`, blob);
     }
     zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, "haircut-gpt-styles.zip");
+      saveAs(content, "ai-variations.zip");
     });
   };
 
@@ -41,75 +41,37 @@ export default function GeneratedImages({ images }: GeneratedImagesProps) {
   };
 
   return (
-    <div className="mt-6">
-      <div className="flex justify-center mb-4">
+    <div className="mt-6 px-4 sm:px-6 lg:px-8">
+      <div className="flex justify-center mb-6">
         <button
           onClick={handleDownloadAll}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium text-sm sm:text-base hover:bg-blue-700 transition-colors"
         >
           Download All
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
         {images.map((src, index) => (
-          <div key={index} className="flex flex-col items-center space-y-2">
-            <div className="relative w-[200px] h-[200px] rounded-lg overflow-hidden bg-gray-200">
-              {!loadedImages[index] && (
-                <div className="absolute inset-0 shine-overlay">
-                  <div className="shine-effect" />
-                </div>
-              )}
+          <div key={index} className="flex flex-col items-center space-y-3">
+            <div className="relative w-full max-w-[200px] aspect-square rounded-lg overflow-hidden bg-gray-800 shadow-md">
               <Image
                 src={src}
-                alt={`Generated hairstyle ${index + 1}`}
+                alt={`Generated ${index + 1}`}
                 width={200}
                 height={200}
-                className={`rounded-lg transition-opacity duration-300 ${
-                  loadedImages[index] ? "opacity-100" : "opacity-0"
-                }`}
+                className="w-full h-full object-cover rounded-lg transition-opacity duration-300"
                 onLoadingComplete={() => handleImageLoad(index)}
               />
             </div>
             <button
               onClick={() => handleDownload(src, index)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors w-full max-w-[200px]"
+              className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors w-full max-w-[200px]"
             >
               Download
             </button>
           </div>
         ))}
       </div>
-      <style jsx>{`
-        .shine-overlay {
-          background-color: #f3f4f6;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .shine-effect {
-          position: absolute;
-          top: 0;
-          left: -75%;
-          width: 50%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.6) 50%,
-            transparent 100%
-          );
-          transform: skewX(-25deg);
-          animation: shine 1.5s infinite ease-in-out;
-        }
-        @keyframes shine {
-          0% {
-            left: -75%;
-          }
-          100% {
-            left: 125%;
-          }
-        }
-      `}</style>
     </div>
   );
 }
