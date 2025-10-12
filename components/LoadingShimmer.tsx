@@ -1,5 +1,4 @@
 "use client";
-import { motion } from "framer-motion";
 import Image from "next/image";
 
 interface LoadingShimmerProps {
@@ -9,65 +8,106 @@ interface LoadingShimmerProps {
 export default function LoadingShimmer({ imageSrc }: LoadingShimmerProps) {
   return (
     <div className="mt-6 flex justify-center">
-      {imageSrc ? (
-        <div className="relative w-64 h-48 rounded-lg overflow-hidden bg-gray-200 shadow-md">
+      <div className="relative w-48 sm:w-64 h-36 sm:h-68 rounded-lg overflow-hidden bg-gray-800 shadow-md">
+        {imageSrc && (
           <Image
             src={imageSrc}
-            alt="Processing your photo"
+            alt="Processing"
             fill
-            className="object-contain"
-            unoptimized={true}
+            className="object-cover opacity-50"
           />
-          <div className="absolute inset-0 shine-overlay">
-            <div className="shine-effect" />
-          </div>
-          <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-            <p className="text-white font-medium">Processing...</p>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="honeycomb">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
           </div>
         </div>
-      ) : (
-        <motion.div
-          className="w-64 h-48 bg-gray-200 rounded-lg relative overflow-hidden shadow-md"
-          animate={{
-            background: [
-              "linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%)",
-              "linear-gradient(90deg, #f3f4f6 0%, #ffffff 50%, #f3f4f6 100%)",
-              "linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%)",
-            ],
-          }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600">
-            Processing...
-          </p>
-        </motion.div>
-      )}
+      </div>
       <style jsx>{`
-        .shine-overlay {
-          pointer-events: none;
-        }
-        .shine-effect {
-          position: absolute;
-          top: 0;
-          left: -75%;
-          width: 50%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.8) 50%,
-            transparent 100%
-          );
-          transform: skewX(-25deg);
-          animation: shine 1.5s infinite ease-in-out;
-        }
-        @keyframes shine {
-          0% {
-            left: -75%;
-          }
+        @keyframes honeycomb {
+          0%,
+          20%,
+          80%,
           100% {
-            left: 125%;
+            opacity: 0;
+            transform: scale(0);
           }
+          30%,
+          70% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .honeycomb {
+          height: 24px;
+          position: relative;
+          width: 24px;
+        }
+        .honeycomb div {
+          animation: honeycomb 2.1s infinite backwards;
+          background: #3b82f6; /* Blue-600 to match theme */
+          height: 12px;
+          margin-top: 6px;
+          position: absolute;
+          width: 24px;
+        }
+        .honeycomb div:after,
+        .honeycomb div:before {
+          content: "";
+          border-left: 12px solid transparent;
+          border-right: 12px solid transparent;
+          position: absolute;
+          left: 0;
+          right: 0;
+        }
+        .honeycomb div:after {
+          top: -6px;
+          border-bottom: 6px solid #3b82f6;
+        }
+        .honeycomb div:before {
+          bottom: -6px;
+          border-top: 6px solid #3b82f6;
+        }
+        .honeycomb div:nth-child(1) {
+          animation-delay: 0s;
+          left: -28px;
+          top: 0;
+        }
+        .honeycomb div:nth-child(2) {
+          animation-delay: 0.1s;
+          left: -14px;
+          top: 22px;
+        }
+        .honeycomb div:nth-child(3) {
+          animation-delay: 0.2s;
+          left: 14px;
+          top: 22px;
+        }
+        .honeycomb div:nth-child(4) {
+          animation-delay: 0.3s;
+          left: 28px;
+          top: 0;
+        }
+        .honeycomb div:nth-child(5) {
+          animation-delay: 0.4s;
+          left: 14px;
+          top: -22px;
+        }
+        .honeycomb div:nth-child(6) {
+          animation-delay: 0.5s;
+          left: -14px;
+          top: -22px;
+        }
+        .honeycomb div:nth-child(7) {
+          animation-delay: 0.6s;
+          left: 0;
+          top: 0;
         }
       `}</style>
     </div>

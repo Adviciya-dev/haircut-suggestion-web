@@ -1,21 +1,19 @@
 import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import UploadSection from "@/components/UploadSection";
-import AllowedImages from "@/components/AllowedImages";
-import FeaturesSection from "@/components/FeaturesSection";
-import DemoCarousel from "@/components/DemoCarousel";
+import HeroHome from "@/components/HeroHome";
+import FeaturesShowcase from "@/components/FeaturesShowcase";
+import DemoSection from "@/components/DemoSection";
 import FAQSection from "@/components/FAQSection";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
     <main className="flex flex-col min-h-screen">
       <Header />
-      <Hero />
-      <UploadSection />
-      <AllowedImages />
-      <FeaturesSection />
-      <DemoCarousel />
+      <HeroHome />
+      <FeaturesShowcase />
+      <DemoSection />
       <FAQSection />
+      <Footer />
     </main>
   );
 }
