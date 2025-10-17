@@ -9,3 +9,4 @@ export interface FAQ {
 }
 
 export type GptType = "haircut" | "indoor" | "vehicle";
+export type StyleGptType = "style";

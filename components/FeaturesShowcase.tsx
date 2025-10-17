@@ -37,16 +37,16 @@ const features: Feature[] = [
     active: true,
   },
   {
-    title: "Tattoo-GPT",
-    description: "Personalized body art designs that fit your style.",
-    image: "/feature-section/tatoo-ai.webp",
-    href: "#",
-    active: false,
-  },
-  {
     title: "Style-GPT",
     description: "AI-curated outfits for any occasion.",
     image: "/feature-section/ai-outfit.webp",
+    href: "/style-gpt",
+    active: true,
+  },
+  {
+    title: "Tattoo-GPT",
+    description: "Personalized body art designs that fit your style.",
+    image: "/feature-section/tatoo-ai.webp",
     href: "#",
     active: false,
   },

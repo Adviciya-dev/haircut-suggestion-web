@@ -9,6 +9,8 @@ const INDOOR_PROMPT = `Analyze the uploaded indoor room photo. Generate exactly 
 
 const VEHICLE_PROMPT = `Analyze the uploaded vehicle photo (car or bike). Generate exactly four distinct, realistic modification variations (e.g., bulkier alloy rims, side lips, ultra-grounded stance, extra-dark cooling tint, sporty spoiler, mild front facelift) suited to the model. Keep the vehicle identity, number plate, and shape intact. Do not overhaul the design. Return four PNG images as base64-encoded strings.`;
 
+const STYLE_PROMPT = `Analyze Image 1 (person) and Image 2 (reference outfit). Replace all clothing in Image 1 with the full outfit from Image 2 (shirt, pants, shoes, jacket, accessories). Keep identical face, hair, body, pose, lighting, and background. Ensure perfect fit and realism. Return one PNG image as a base64-encoded string.`;
+
 interface InlineData {
   mimeType: string;
   data: string;
@@ -90,4 +92,73 @@ export async function processIndoorImage(file: File): Promise<string[]> {
 export async function processVehicleImage(file: File): Promise<string[]> {
   if (!GEMINI_API_KEY) throw new Error("API key missing.");
   return generateContent(VEHICLE_PROMPT, file);
+}
+
+export async function processStyleImage(
+  personFile: File,
+  outfitFile: File
+): Promise<string> {
+  if (!GEMINI_API_KEY) throw new Error("API key missing.");
+
+  const personBase64 = await fileToBase64(personFile);
+  const outfitBase64 = await fileToBase64(outfitFile);
+
+  const requestBody = {
+    contents: [
+      {
+        parts: [
+          { text: STYLE_PROMPT },
+          {
+            inline_data: {
+              mime_type: personFile.type,
+              data: personBase64.split(",")[1],
+            },
+          },
+          {
+            inline_data: {
+              mime_type: outfitFile.type,
+              data: outfitBase64.split(",")[1],
+            },
+          },
+        ],
+      },
+    ],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 8192,
+    },
+  };
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 400)
+      throw new Error("Invalid images. Try clear photos.");
+    if (response.status === 429)
+      throw new Error("Rate limit reached. Try later.");
+    throw new Error("Processing failed. Please try again.");
+  }
+
+  const data = await response.json();
+  if (!data.candidates?.[0]?.content?.parts) {
+    throw new Error("Unexpected response from AI. Retry.");
+  }
+
+  const parts = data.candidates[0].content.parts;
+  const image = parts.find((part: Part) =>
+    part.inlineData?.mimeType?.startsWith("image/")
+  );
+
+  if (!image) {
+    throw new Error("Could not generate outfit. Retry with clear images.");
+  }
+
+  return `data:${image.inlineData!.mimeType};base64,${image.inlineData!.data}`;
 }

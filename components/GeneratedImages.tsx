@@ -2,25 +2,25 @@
 import Image from "next/image";
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
-import { useState } from "react";
 
 interface GeneratedImagesProps {
   images: string[];
+  isSingle?: boolean;
 }
 
-export default function GeneratedImages({ images }: GeneratedImagesProps) {
-  const [loadedImages, setLoadedImages] = useState<boolean[]>(
-    images.map(() => false)
-  );
-
+export default function GeneratedImages({
+  images,
+  isSingle = false,
+}: GeneratedImagesProps) {
   const handleDownload = (url: string, index: number) => {
     const link = document.createElement("a");
     link.href = url;
-    link.download = `variation-${index + 1}.png`;
+    link.download = isSingle ? "ai-outfit.png" : `variation-${index + 1}.png`;
     link.click();
   };
 
   const handleDownloadAll = async () => {
+    if (isSingle) return;
     const zip = new JSZip();
     for (let i = 0; i < images.length; i++) {
       const response = await fetch(images[i]);
@@ -32,13 +32,31 @@ export default function GeneratedImages({ images }: GeneratedImagesProps) {
     });
   };
 
-  const handleImageLoad = (index: number) => {
-    setLoadedImages((prev) => {
-      const newLoaded = [...prev];
-      newLoaded[index] = true;
-      return newLoaded;
-    });
-  };
+  if (isSingle) {
+    return (
+      <div className="mt-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={() => handleDownload(images[0], 0)}
+            className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium text-sm sm:text-base hover:bg-blue-700 transition-colors"
+          >
+            Download Outfit
+          </button>
+        </div>
+        <div className="flex justify-center">
+          <div className="relative w-full max-w-[400px] aspect-square rounded-lg overflow-hidden bg-gray-800 shadow-2xl">
+            <Image
+              src={images[0]}
+              alt="Generated Outfit"
+              width={400}
+              height={400}
+              className="w-full h-full object-cover rounded-lg"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-6 px-4 sm:px-6 lg:px-8">
@@ -60,7 +78,6 @@ export default function GeneratedImages({ images }: GeneratedImagesProps) {
                 width={200}
                 height={200}
                 className="w-full h-full object-cover rounded-lg transition-opacity duration-300"
-                onLoadingComplete={() => handleImageLoad(index)}
               />
             </div>
             <button
